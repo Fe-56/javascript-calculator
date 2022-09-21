@@ -16,17 +16,11 @@ class Calculator extends React.Component{
 
     inputButtonHandler(event){
         let character;
-        let continueFromPrevious = false;
         let newTempDisplay;
         let newDisplay;
-        let newDisplayIsAnswer = false;
         let isNumber = true;
 
         switch (event.target.id){
-            case "decimal":
-                character = ".";
-                break;
-
             case "zero":
                 character = "0";
                 break;
@@ -69,25 +63,26 @@ class Calculator extends React.Component{
 
             case "add":
                 character = "+";
-                continueFromPrevious = true;
                 isNumber = false;
                 break;
 
             case "subtract":
                 character = "-";
-                continueFromPrevious = true;
                 isNumber = false;
                 break;
 
             case "multiply":
                 character = "x";
-                continueFromPrevious = true;
                 isNumber = false;
                 break;
 
             case "divide":
                 character = "/";
-                continueFromPrevious = true;
+                isNumber = false;
+                break;
+
+            case "decimal":
+                character = ".";
                 isNumber = false;
                 break;
 
@@ -97,10 +92,42 @@ class Calculator extends React.Component{
         }
 
         this.setState((state, props) => {
-            if (isNumber){
-                if (character === "0"){
-                    if (state.display === "0"){
+            const startIndexOfLastNumber = Math.max(
+                state.tempDisplay.lastIndexOf("+"), 
+                state.tempDisplay.lastIndexOf("-"), 
+                state.tempDisplay.lastIndexOf("x"), 
+                state.tempDisplay.lastIndexOf("-")) + 1;
+            const currentOperand = state.tempDisplay.slice(startIndexOfLastNumber);
+
+            if (isNumber){ // if a number (between 0 and 9) is inputted
+                if (character === "0"){ // if 0 is inputted
+                    if (state.tempDisplay === "0"){
                         newTempDisplay = "0";
+                        newDisplay = state.display;
+                    }
+
+                    else if (state.tempDisplay === ""){
+                        newTempDisplay = "0";
+                        newDisplay = state.display;
+                    }
+
+                    else if (
+                        state.tempDisplay === "+0" ||
+                        state.tempDisplay === "-0" ||
+                        state.tempDisplay === "x0" ||
+                        state.tempDisplay === "/0"
+                        ){
+                            newTempDisplay = state.tempDisplay;
+                            newDisplay = state.display;
+                    }
+
+                    else if (currentOperand === "0"){
+                        newTempDisplay = state.tempDisplay;
+                        newDisplay = state.display;
+                    }
+
+                    else if (state.display === "0"){
+                        newTempDisplay = state.tempDisplay;
                         newDisplay = state.display;
                     }
 
@@ -114,14 +141,42 @@ class Calculator extends React.Component{
                         newDisplay = "0";
                     }
 
-                    else if (
-                        state.display === "+0" ||
-                        state.display === "-0" ||
-                        state.display === "x0" ||
-                        state.display === "/0"
+                    else{
+                        newTempDisplay = state.tempDisplay.concat(character);
+                        newDisplay = state.display.concat(character);
+                    }
+                }
+
+                else{ // if a number other than 0 is inputted
+                    if (
+                        state.tempDisplay === "+0" ||
+                        state.tempDisplay === "-0" ||
+                        state.tempDisplay === "x0" ||
+                        state.tempDisplay === "/0"
                         ){
-                            newTempDisplay = state.tempDisplay;
-                            newDisplay = state.display;
+                            newTempDisplay = state.tempDisplay[0].concat(character);
+                            newDisplay = character;
+                    }
+
+                    else if (state.tempDisplay === "0"){
+                        newTempDisplay = character;
+                        newDisplay = character;
+                    }
+
+                    else if (currentOperand === "0"){
+                        newTempDisplay = state.tempDisplay.slice(0, state.tempDisplay.length - 1).concat(character);
+                        newDisplay = character;
+                    }
+                    
+                    else if (
+                        state.display === "0" ||
+                        state.display === "+" ||
+                        state.display === "-" ||
+                        state.display === "x" ||
+                        state.display === "/"
+                        ){
+                        newTempDisplay = state.tempDisplay.concat(character);
+                        newDisplay = character;
                     }
 
                     else{
@@ -129,29 +184,94 @@ class Calculator extends React.Component{
                         newDisplay = state.display.concat(character);
                     }
                 }
+            }
 
-                else{
+            else{ // if a non-number is inputted
+                if (character === "."){ // if a decimal point is inputted
+                    if (state.tempDisplay === ""){
+                        newTempDisplay = "0.";
+                        newDisplay = "0.";
+                    }
 
+                    else if (
+                        state.display === "+" ||
+                        state.display === "-" ||
+                        state.display === "x" ||
+                        state.display === "/"
+                    ){
+                        newTempDisplay = state.tempDisplay.concat("0.");
+                        newDisplay = "0."
+                    }
+
+                    else if (currentOperand.indexOf(".") > -1){ // if the currentOperand already has a decimal place
+                        newTempDisplay = state.tempDisplay;
+                        newDisplay = state.display;
+                    }
+
+                    else{
+                        newTempDisplay = state.tempDisplay.concat(".");
+                        newDisplay = state.display.concat(".");
+                    }
+                }
+
+                else{ // if an operator is inputted
+                    if (character === "-"){
+                        if (
+                            state.tempDisplay.slice(state.tempDisplay.length - 2, state.tempDisplay.length) === "+-" ||
+                            state.tempDisplay.slice(state.tempDisplay.length - 2, state.tempDisplay.length) === "--" ||
+                            state.tempDisplay.slice(state.tempDisplay.length - 2, state.tempDisplay.length) === "x-" ||
+                            state.tempDisplay.slice(state.tempDisplay.length - 2, state.tempDisplay.length) === "/-"
+                        ){
+                            newTempDisplay = state.tempDisplay;
+                            newDisplay = state.display;
+                        }
+    
+                        else{
+                            newTempDisplay = state.tempDisplay.concat("-");
+                            newDisplay = "-";
+                        }
+                    }
+    
+                    else{ // if an operator other than "-" is inputted 
+                        if (
+                            state.tempDisplay.slice(state.tempDisplay.length - 2, state.tempDisplay.length) === "+-" ||
+                            state.tempDisplay.slice(state.tempDisplay.length - 2, state.tempDisplay.length) === "--" ||
+                            state.tempDisplay.slice(state.tempDisplay.length - 2, state.tempDisplay.length) === "x-" ||
+                            state.tempDisplay.slice(state.tempDisplay.length - 2, state.tempDisplay.length) === "/-"
+                        ){
+                            newTempDisplay = state.tempDisplay.slice(0, state.tempDisplay.length - 2).concat(character);
+                            newDisplay = character;
+                        }
+
+                        else if (
+                            state.tempDisplay[state.tempDisplay.length - 1] === "+" ||
+                            state.tempDisplay[state.tempDisplay.length - 1] === "-" ||
+                            state.tempDisplay[state.tempDisplay.length - 1] === "x" ||
+                            state.tempDisplay[state.tempDisplay.length - 1] === "/" ||
+                            state.tempDisplay[state.tempDisplay.length - 1] === "."
+                        ){
+                            newTempDisplay = state.tempDisplay.slice(0, state.tempDisplay.length - 1).concat(character);
+                            newDisplay = character;
+                        }
+                        
+                        else{
+                            newTempDisplay = state.tempDisplay.concat(character);
+                            newDisplay = character;
+                        }
+                    }
                 }
             }
 
-            else{
-                if (
-                    state.display === "0" || 
-                    state.display === "+" ||
-                    state.display === "-" ||
-                    state.display === "x" ||
-                    state.display === "/"
-                    ){
-                        newTempDisplay = character;
-                        newDisplay = character;
-                }
+            if (state.displayIsAnswer){
+                newTempDisplay = state.display.concat(character);
+                newDisplay = character;
+
             }
 
             return {
                 tempDisplay: newTempDisplay,
                 display: newDisplay,
-                displayIsAnswer: newDisplayIsAnswer
+                displayIsAnswer: false
             }
         });
     }
@@ -160,16 +280,36 @@ class Calculator extends React.Component{
         this.setState((state, props) => {
             return {
                 tempDisplay: "",
-                display: "0"
+                display: "0",
+                displayIsAnswer: false
             }
         });
     }
 
     equalsButtonHandler(){
         this.setState((state, props) => {
+            var newTempDisplay;
+            var newDisplay; 
+
+            if (
+                state.display[state.display.length - 1] === "+" ||
+                state.display[state.display.length - 1] === "-" ||
+                state.display[state.display.length - 1] === "x" ||
+                state.display[state.display.length - 1] === "/" ||
+                state.display[state.display.length - 1] === "."
+            ){
+                newTempDisplay = state.tempDisplay.slice(0, state.tempDisplay.length - 1).concat("=");
+                newDisplay = calculate(state.tempDisplay.slice(0, state.tempDisplay.length - 1));
+            }
+
+            else {
+                newTempDisplay = state.tempDisplay.concat("=");
+                newDisplay = calculate(this.state.tempDisplay)
+            }
+
             return {
-                tempDisplay: state.tempDisplay.concat("="),
-                display: calculate(this.state.display),
+                tempDisplay: newTempDisplay,
+                display: newDisplay,
                 displayIsAnswer: true
             };
         });

@@ -48,11 +48,11 @@ button {
 }
 
 .clear-button {
-    background-color: red;
+    background-color: #8c1eff;
 }
 
 .equal-button {
-    background-color: lime;
+    background-color: #f222ff;
 }
 
 .button:hover {
