@@ -263,9 +263,23 @@ class Calculator extends React.Component{
             }
 
             if (state.displayIsAnswer){
+                if (isNumber){
+                    newTempDisplay = character;
+                    newDisplay = character;
+                }
+
+                else if (character === "."){
+                    newTempDisplay = "0.";
+                    newDisplay = "0.";
+                }
+
+                else{ // if an operator is inputted
+                    newTempDisplay = state.tempDisplay.concat(character);
+                    newDisplay = character;
+                }
+
                 newTempDisplay = state.display.concat(character);
                 newDisplay = character;
-
             }
 
             return {
@@ -299,12 +313,12 @@ class Calculator extends React.Component{
                 state.display[state.display.length - 1] === "."
             ){
                 newTempDisplay = state.tempDisplay.slice(0, state.tempDisplay.length - 1).concat("=");
-                newDisplay = calculate(state.tempDisplay.slice(0, state.tempDisplay.length - 1));
+                newDisplay = calculate(state.tempDisplay.slice(0, state.tempDisplay.length - 1)).toString();
             }
 
             else {
                 newTempDisplay = state.tempDisplay.concat("=");
-                newDisplay = calculate(this.state.tempDisplay)
+                newDisplay = calculate(this.state.tempDisplay).toString();
             }
 
             return {

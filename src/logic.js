@@ -1,12 +1,11 @@
-function calculate(input){
+function calculate(input){ // immediate execution logic
     const operands = [];
     const operators = [];
     var currentOperand = "";
+    var answer = 0;
 
     for (let i = 0; i < input.length; i++){
         let character = input.charAt(i);
-        console.log("character: " + character);
-        console.log("currentOperand: " + currentOperand);
 
         if (
             character === "+" ||
@@ -38,9 +37,40 @@ function calculate(input){
         operands.push(Number(currentOperand));
     }
 
-    console.log("operands: " + JSON.stringify(operands));
-    console.log("operators: " + JSON.stringify(operators));
-    return "69";
+    var operand;
+    var operator;
+
+    for (let i = 0; i < operands.length; i++){
+        operand = operands[i];
+
+        if (i === 0){
+            answer += operand;
+        }
+
+        else{
+            operator = operators[i - 1];
+
+            switch (operator){
+                case "+":
+                    answer += operand;
+                    break;
+
+                case "-":
+                    answer -= operand;
+                    break;
+
+                case "x":
+                    answer *= operand;
+                    break;
+
+                case "/":
+                    answer /= operand;
+                    break;
+            }
+        }
+    }
+
+    return answer;
 }
 
 export default calculate;
